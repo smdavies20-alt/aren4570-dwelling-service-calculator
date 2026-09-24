@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#102a43" />
+    <meta name="description" content="A browser-based dwelling electrical service load calculator using the NEC standard method." />
+    <title>Dwelling Service Load Calculator</title>
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="Dwelling service calculator home"><span class="brand-mark">ES</span><span>Electrical Systems <small>Dwelling service calculator</small></span></a>
+        <span class="edition-tag">NEC 2023 · Standard method</span>
+      </div>
+    </header>
+
+    <main id="top" class="layout">
+      <section class="intro">
+        <p class="eyebrow">AREN 4570 · BUILDING ELECTRICAL SYSTEMS</p>
+        <h1>Estimate a dwelling’s electrical service</h1>
+        <p>Enter dwelling loads to see an NEC standard-method demand calculation, neutral estimate, and preliminary copper THW conductor selections.</p>
+        <div class="notice"><strong>Educational estimate.</strong> Verify all calculations, conductor conditions, local amendments, and equipment requirements against the adopted code and course materials before design or installation.</div>
+      </section>
+
+      <section class="panel input-panel" aria-labelledby="input-heading">
+        <div class="panel-heading"><div><p class="eyebrow">LOAD DATA</p><h2 id="input-heading">Dwelling inputs</h2></div><label class="preset-label" for="validation-case">Validation case<select id="validation-case"><option value="custom">Custom inputs</option><option value="problem1">Problem 1</option><option value="problem2">Problem 2</option></select></label></div>
+        <form id="calculator-form">
+          <div class="input-grid">
+            <fieldset class="form-section">
+              <legend><span class="section-number">01</span>Dwelling and service</legend>
+              <div class="field-grid">
+                <label class="field"><span>Dwelling floor area</span><span class="input-unit"><input id="floor-area" name="floorArea" type="number" min="1" step="1" value="2000" required /><span>ft²</span></span></label>
+                <label class="field"><span>Electrical system</span><select id="system" name="system"><option value="split">120/240 V · single-phase</option><option value="three">120/208 V · three-phase, 4-wire</option></select></label>
+              </div>
+              <p class="field-hint">Three-phase current assumes balanced phase loading; actual conductor sizing may require phase-by-phase load allocation.</p>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="section-number">02</span>Ranges and dryers</legend>
+              <div class="field-grid">
+                <label class="field"><span>Number of ranges</span><input id="range-count" type="number" min="0" max="25" step="1" value="1" /></label>
+                <label class="field"><span>Rating of each range</span><span class="input-unit"><input id="range-rating" type="number" min="0" step="0.1" value="10" /><span>kVA</span></span></label>
+                <label class="field"><span>Number of dryers</span><input id="dryer-count" type="number" min="0" max="42" step="1" value="1" /></label>
+                <label class="field"><span>Rating of each dryer</span><span class="input-unit"><input id="dryer-rating" type="number" min="0" step="0.1" value="4.5" /><span>kVA</span></span></label>
+              </div>
+              <p class="field-hint">The dryer service load uses the 5 kVA per-dryer minimum when the entered nameplate rating is lower.</p>
+            </fieldset>
+
+            <fieldset class="form-section form-section-wide">
+              <legend><span class="section-number">03</span>Fixed appliances</legend>
+              <p class="section-description">Enter fixed appliances other than ranges and dryers. Appliance voltage is editable and determines whether its load is included in the neutral estimate.</p>
+              <div class="appliance-table-wrap"><table class="appliance-table"><thead><tr><th scope="col">Appliance</th><th scope="col">Quantity</th><th scope="col">Rating each</th><th scope="col">Voltage</th></tr></thead><tbody id="appliance-rows"></tbody></table></div>
+              <div class="other-appliance-row">
+                <label class="field"><span>Other fixed appliances · quantity</span><input id="other-count" type="number" min="0" max="30" step="1" value="0" /></label>
+                <label class="field"><span>Rating each</span><span class="input-unit"><input id="other-rating" type="number" min="0" step="0.1" value="0" /><span>kVA</span></span></label>
+                <label class="field"><span>Voltage</span><select id="other-voltage"><option value="120">120 V · line-to-neutral</option><option value="240">240 V · line-to-line</option></select></label>
+              </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="section-number">04</span>Heating and cooling</legend>
+              <div class="field-grid">
+                <label class="field"><span>Heating load</span><span class="input-unit"><input id="heating" type="number" min="0" step="0.1" value="15" /><span>kVA</span></span></label>
+                <label class="field"><span>Cooling / A/C load</span><span class="input-unit"><input id="cooling" type="number" min="0" step="0.1" value="5" /><span>kVA</span></span></label>
+              </div>
+              <p class="field-hint">Heating is taken at 100% of entered load; the larger of heating and cooling is included.</p>
+            </fieldset>
+
+            <fieldset class="form-section">
+              <legend><span class="section-number">05</span>Motor loads</legend>
+              <div class="field-grid">
+                <label class="field"><span>Number of motors</span><input id="motor-count" type="number" min="0" max="20" step="1" value="0" /></label>
+                <label class="field"><span>Largest motor load</span><span class="input-unit"><input id="motor-rating" type="number" min="0" step="0.1" value="0" /><span>kVA</span></span></label>
+              </div>
+              <p class="field-hint">Enter separately identified motor loads not already included in the appliance or HVAC ratings. The largest motor gets a 25% adder.</p>
+            </fieldset>
+          </div>
+
+          <div id="form-errors" class="form-errors" role="alert" aria-live="polite"></div>
+          <div class="form-actions"><button class="button button-primary" type="submit">Calculate service</button><button class="button button-secondary" type="reset">Reset inputs</button><span class="form-note">Calculations run in this browser.</span></div>
+        </form>
+      </section>
+
+      <section id="results" class="results-section" aria-labelledby="results-heading" aria-live="polite" hidden>
+        <div class="results-top"><div><p class="eyebrow">CALCULATION RESULTS</p><h2 id="results-heading">Estimated service</h2></div><span id="result-system" class="system-pill"></span></div>
+        <div id="validation-banner" class="validation-banner" hidden></div>
+        <div class="result-cards">
+          <article class="result-card result-card-primary"><span class="result-label">Calculated demand</span><strong id="result-demand">—</strong><span id="result-current" class="result-subtext">—</span></article>
+          <article class="result-card"><span class="result-label">Service conductors</span><strong id="result-phase">—</strong><span id="result-phase-sub" class="result-subtext">Copper THW · 75°C ampacity</span></article>
+          <article class="result-card"><span class="result-label">Neutral conductor</span><strong id="result-neutral">—</strong><span id="result-neutral-sub" class="result-subtext">—</span></article>
+          <article class="result-card"><span class="result-label">Service grounding conductor (Cu)</span><strong id="result-ground">—</strong><span class="result-subtext">Textbook Table 7.6 mapping</span></article>
+          <article class="result-card"><span class="result-label">Main circuit breaker</span><strong id="result-breaker">—</strong><span id="result-poles" class="result-subtext">—</span></article>
+        </div>
+        <div class="breakdown-layout">
+          <article class="panel breakdown-panel"><div class="panel-heading"><div><p class="eyebrow">SHOW YOUR WORK</p><h3>Demand calculation breakdown</h3></div></div><div id="breakdown" class="breakdown-list"></div></article>
+          <aside class="panel method-panel"><p class="eyebrow">SIZING BASIS</p><h3>Read before using</h3><ul><li>Phase and neutral selections use copper THW ampacities in the 75°C column under the calculator’s baseline assumptions.</li><li>The grounding conductor follows the course Table 7.6 mapping supplied for this assignment.</li><li>Neutral demand is a simplified estimate from the requested line-to-neutral rules. It is not a phase-balance study.</li><li>Confirm installation conditions, terminal ratings, code provisions, and local requirements independently.</li></ul></aside>
+        </div>
+      </section>
+
+      <footer><span>AREN 4570 · Building Electrical Systems</span><span>Educational calculator · NEC 2023 standard-method basis</span></footer>
+    </main>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
